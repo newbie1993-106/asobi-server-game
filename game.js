@@ -1,6 +1,6 @@
 "use strict";
 const $ = (s) => document.querySelector(s);
-const routeNames = { "106":"🟦 106", "1993":"🟩 1993", third:"🟪 第三", true:"🌟 TRUE ROUTE" };
+const routeNames = { "106":"🟦 106", "1993":"🟩 1993", third:"🟪 新鯖", true:"🌟 TRUE ROUTE" };
 const labels = { population:"👥 人口", maintenance:"🛠 保守", security:"🛡 治安", autonomy:"🏛 自治", population106:"🟦 106・人口", maintenance106:"🟦 106・保守", security106:"🟦 106・治安", autonomy106:"🟦 106・自治", population1993:"🟩 1993・人口", maintenance1993:"🟩 1993・保守", security1993:"🟩 1993・治安", autonomy1993:"🟩 1993・自治" };
 const state = { route:null, day:1, stats:{}, dStreak:0, migration:0, survival:0, mystery:false, ended:false, trueStats:null, trueTarget:null };
 
