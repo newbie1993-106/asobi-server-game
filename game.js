@@ -15,7 +15,7 @@ function start(route){
 }
 function objective(){
   if(state.route === "106") return "人口を守り続けよう。<br><b>目標：</b>DAY10以降、人口を一定以上で維持する。";
-  if(state.route === "1993") return `受け入れ体制を整えよう。<br><b>目標：</b>DAY10以降に移行を進める。 ${state.day>=10?`（進行 ${state.migration}/5）`:""}`;
+  if(state.route === "1993") return `受け入れ体制を整えよう。<br><b>目標：</b>DAY11以降に移行を進める。 ${state.day>=11?`（進行 ${state.migration}/5）`:""}`;
   if(state.route === "third") return "新しい鯖を育てよう。<br><b>目標：</b>4つの力を、すべて十分な水準まで高める。";
   return state.trueTarget ? `${routeNames[state.trueTarget]}を運営中。<br><b>注意：</b>もう片方の鯖は、このターン操作できない。` : "二つの鯖を、同時に維持する。<br><b>目標：</b>まず、今ターン運営する鯖を選ぶ。";
 }
@@ -23,7 +23,7 @@ function renderStats(stats){
   $("#status-grid").innerHTML = Object.entries(stats).map(([key,value]) => { const low=value !== Infinity && value<30; return `<article class="stat"><div class="stat-head"><span>${labels[key]}</span><b>${value===Infinity?"∞":value}</b></div><div class="meter ${low?"low":""}"><i style="width:${value===Infinity?100:value}%"></i></div></article>`; }).join("");
 }
 function normalChoices(){
-  const r=state.route, items = r === "106" ? [["A","企画を立てて参加者を呼ぶ","人口 +20"],["B","鯖の設備を点検する","保守 +20"],["C","ルール会議を開く","治安 +10 / 自治 +10"],["D","あえて手を出さず見守る","状況を見守る"]] : r === "1993" ? [["A","新規参加者を募集し、見回りを増やす","人口 +10 / 治安 +10"],["B","有志と鯖を整備する","保守 +20"],["C","106の人を迎える準備を進める",state.day>=10?`移行進行度 +1（${state.migration}/5）`:"DAY10以降に解放",state.day<10],["D","あえて手を出さず見守る","状況を見守る"]] : [["A","交流イベントを開いて仲間を集める","人口 +20"],["B","みんなで鯖を整備する","保守 +20"],["C","ルールと運営方針を話し合う","治安 +10 / 自治 +10"],["D","あえて手を出さず見守る","状況を見守る"]];
+  const r=state.route, items = r === "106" ? [["A","企画を立てて参加者を呼ぶ","人口 +20"],["B","鯖の設備を点検する","保守 +20"],["C","ルール会議を開く","治安 +10 / 自治 +10"],["D","あえて手を出さず見守る","状況を見守る"]] : r === "1993" ? [["A","新規参加者を募集し、見回りを増やす","人口 +10 / 治安 +10"],["B","有志と鯖を整備する","保守 +20"],["C","106の人を迎える準備を進める",state.day>=11?`移行進行度 +1（${state.migration}/5）`:"DAY11以降に解放",state.day<11],["D","あえて手を出さず見守る","状況を見守る"]] : [["A","交流イベントを開いて仲間を集める","人口 +20"],["B","みんなで鯖を整備する","保守 +20"],["C","ルールと運営方針を話し合う","治安 +10 / 自治 +10"],["D","あえて手を出さず見守る","状況を見守る"]];
   if(state.mystery) items.push(["?","???","もしも、別の道があったなら……",false,"mystery"]);
   return items;
 }
@@ -54,7 +54,8 @@ function applyNormal(action){
   if(r==="106"){state.survival=s.population>=30?state.survival+1:0;if(state.day>=10&&state.survival>=5){end(true,"106を生き残らせた。\n\nあなたのクリア条件：DAY10以降、人口30以上を5ターン連続で維持する。");return;}}
   if(r==="1993"&&state.migration>=5){end(true,"106からの移行を完遂した。\n\nあなたのクリア条件：DAY10以降、移行を5回進める。");return;}
   if(r==="third"&&finiteEntries(s).every(([,v])=>v>=70)){end(true,"新しい鯖を、すべての面で育て上げた。\n\nあなたのクリア条件：人口・保守・治安・自治のすべてを70以上にする。");return;}
-  state.day++; if(state.day===10){state.mystery=finiteEntries(s).every(([,v])=>v<=30);if(state.mystery)notes.push("……もしも、別の選択肢が存在したなら。 ");}
+  state.day++;
+  if(state.day>=10){state.mystery=finiteEntries(s).every(([,v])=>v<=30);if(state.mystery)notes.push("……もしも、別の選択肢が存在したなら。 ");}
   setMessage(notes.join(" ")); render();
 }
 function enterTrue(){ state.route="true";state.day=1;state.dStreak=0;state.trueTarget=null;state.trueStats={population106:80,maintenance106:Infinity,security106:50,autonomy106:40,population1993:50,maintenance1993:40,security1993:80,autonomy1993:Infinity};setMessage("二つの鯖を共存させる道を選んだ。どちらを運営する？");render(); }
