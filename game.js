@@ -23,7 +23,7 @@ function renderStats(stats, trueMode=false){
   $("#status-grid").innerHTML = Object.entries(stats).map(([key,value]) => { const low=value !== Infinity && value<30; return `<article class="stat"><div class="stat-head"><span>${labels[key]}${trueMode?key.includes("106")?"":"":""}</span><b>${value===Infinity?"∞":value}</b></div><div class="meter ${low?"low":""}"><i style="width:${value===Infinity?100:value}%"></i></div></article>`; }).join("");
 }
 function normalChoices(){
-  const r=state.route, items = r === "106" ? [["A","人口を増やす","人口 +20"],["B","保守を行う","保守 +20"],["C","治安と自治を整える","治安 +10 / 自治 +10"],["D","何もしない","状況を見守る"]] : r === "1993" ? [["A","人口と治安を整える","人口 +10 / 治安 +10"],["B","保守を行う","保守 +20"],["C","106からの移行",state.day>=10?`移行進行度 +1（${state.migration}/5）`:"DAY10以降に解放",state.day<10],["D","何もしない","状況を見守る"]] : [["A","人口を増やす","人口 +30"],["B","保守を行う","保守 +30"],["C","治安と自治を整える","治安 +15 / 自治 +15"],["D","何もしない","状況を見守る"]];
+  const r=state.route, items = r === "106" ? [["A","企画を立てて参加者を呼ぶ","人口 +20"],["B","鯖の設備を点検する","保守 +20"],["C","ルール会議を開く","治安 +10 / 自治 +10"],["D","あえて手を出さず見守る","状況を見守る"]] : r === "1993" ? [["A","新規参加者を募集し、見回りを増やす","人口 +10 / 治安 +10"],["B","有志と鯖を整備する","保守 +20"],["C","106の人を迎える準備を進める",state.day>=10?`移行進行度 +1（${state.migration}/5）`:"DAY10以降に解放",state.day<10],["D","あえて手を出さず見守る","状況を見守る"]] : [["A","交流イベントを開いて仲間を集める","人口 +30"],["B","みんなで鯖を整備する","保守 +30"],["C","ルールと運営方針を話し合う","治安 +15 / 自治 +15"],["D","あえて手を出さず見守る","状況を見守る"]];
   if(state.mystery) items.push(["?","???","もしも、別の道があったなら……",false,"mystery"]);
   return items;
 }
@@ -57,7 +57,7 @@ function applyNormal(action){
   setMessage(notes.join(" ")); render();
 }
 function enterTrue(){ state.route="true";state.day=1;state.dStreak=0;state.trueStats={"population106":80,"population1993":50}; labels.population106="👥 106 人口"; labels.population1993="👥 1993 人口";setMessage("二つの鯖を共存させる道を選んだ。だが、人口は足りない。 ");render(); }
-function trueChoices(){return [["A","106を支援する","106人口 +2（通常の1/10）"],["B","1993を支援する","1993人口 +1（通常の1/10）"],["D","何もしない","両方を見守る"]];}
+function trueChoices(){return [["A","106に残ってほしいと呼びかける","106人口 +2（通常の1/10）"],["B","1993の受け入れを手伝う","1993人口 +1（通常の1/10）"],["D","二つの鯖をただ見守る","両方を見守る"]];}
 function applyTrue(action){ const s=state.trueStats;if(action==="A")s.population106=cap(s.population106+2);if(action==="B")s.population1993=cap(s.population1993+1);s.population106=cap(s.population106-6);s.population1993=cap(s.population1993-6);if(s.population106>=100&&s.population1993>=100){end(false,"⚠ SYSTEM ERROR\n\nこのルートはクリアを想定されていません。間違いなく不具合ですので、ぬーんに連絡してください。");return;}if(gameOver(s)){end(false,trueOverText());return;}state.day++;setMessage("二つの鯖から、同時に人が離れていく。 ");render(); }
 function gameOver(stats){return Object.values(stats).some(v=>v !== Infinity && v<=0);}
 function trueOverText(){return "共存ルートは攻略不可能な難易度だっただろう。攻略不可能なのは、2つの鯖を維持するだけの人口が遊び鯖コミュニティになかったからだ。もしも遊び鯖の人口が多かったなら、共存ルートは攻略不能ルートではなく、真の正解のルートとして君臨していたでしょう。";}
