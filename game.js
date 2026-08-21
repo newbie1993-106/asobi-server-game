@@ -111,7 +111,18 @@ function applyNormal(action){
   const trouble=finiteEntries(s).filter(([,v])=>v<30); trouble.forEach(([k,v])=>s[k]=cap(v-3));
   if(trouble.length)notes.push("トラブルの影響が出ている。");
   if(gameOver(s)){ end(false, state.route==="true"?trueOverText():"鯖を維持できなくなった。GAME OVER。"); return; }
-  if(r==="106"){state.survival=s.population>=30?state.survival+1:0;if(state.day>=10&&state.survival>=5){end(true,"106を生き残らせた。\n\nあなたのクリア条件：DAY10以降、人口30以上を5ターン連続で維持する。");return;}}
+  if(r==="106"){
+  if(dayShown>=10){
+    state.survival=s.population>=30?state.survival+1:0;
+  }else{
+    state.survival=0;
+  }
+
+  if(dayShown>=10&&state.survival>=5){
+    end(true,"106を生き残らせた。\n\nあなたのクリア条件：DAY10以降、人口30以上を5ターン連続で維持する。");
+    return;
+  }
+}
   if(r==="1993"&&state.migration>=5){end(true,"106からの移行を完遂した。\n\nあなたのクリア条件：DAY10以降、移行を5回進める。");return;}
   if(r==="third"&&finiteEntries(s).every(([,v])=>v>=70)){end(true,"新しい鯖を、すべての面で育て上げた。\n\nあなたのクリア条件：人口・保守・治安・自治のすべてを70以上にする。");return;}
   state.day++;
