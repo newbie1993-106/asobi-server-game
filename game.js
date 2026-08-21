@@ -23,7 +23,7 @@ function renderStats(stats){
   $("#status-grid").innerHTML = Object.entries(stats).map(([key,value]) => { const low=value !== Infinity && value<30; return `<article class="stat"><div class="stat-head"><span>${labels[key]}</span><b>${value===Infinity?"∞":value}</b></div><div class="meter ${low?"low":""}"><i style="width:${value===Infinity?100:value}%"></i></div></article>`; }).join("");
 }
 function normalChoices(){
-  const r=state.route, items = r === "106" ? [["A","企画を立てて参加者を呼ぶ","人口 +20"],["B","鯖の設備を点検する","保守 +20"],["C","ルール会議を開く","治安 +10 / 自治 +10"],["D","あえて手を出さず見守る","状況を見守る"]] : r === "1993" ? [["A","新規参加者を募集し、見回りを増やす","人口 +10 / 治安 +10"],["B","有志と鯖を整備する","保守 +20"],["C","106の人を迎える準備を進める",state.day>=10?`移行進行度 +1（${state.migration}/5）`:"DAY10以降に解放",state.day<10],["D","あえて手を出さず見守る","状況を見守る"]] : [["A","交流イベントを開いて仲間を集める","人口 +30"],["B","みんなで鯖を整備する","保守 +30"],["C","ルールと運営方針を話し合う","治安 +15 / 自治 +15"],["D","あえて手を出さず見守る","状況を見守る"]];
+  const r=state.route, items = r === "106" ? [["A","企画を立てて参加者を呼ぶ","人口 +20"],["B","鯖の設備を点検する","保守 +20"],["C","ルール会議を開く","治安 +10 / 自治 +10"],["D","あえて手を出さず見守る","状況を見守る"]] : r === "1993" ? [["A","新規参加者を募集し、見回りを増やす","人口 +10 / 治安 +10"],["B","有志と鯖を整備する","保守 +20"],["C","106の人を迎える準備を進める",state.day>=10?`移行進行度 +1（${state.migration}/5）`:"DAY10以降に解放",state.day<10],["D","あえて手を出さず見守る","状況を見守る"]] : [["A","交流イベントを開いて仲間を集める","人口 +20"],["B","みんなで鯖を整備する","保守 +20"],["C","ルールと運営方針を話し合う","治安 +10 / 自治 +10"],["D","あえて手を出さず見守る","状況を見守る"]];
   if(state.mystery) items.push(["?","???","もしも、別の道があったなら……",false,"mystery"]);
   return items;
 }
@@ -41,9 +41,9 @@ function applyNormal(action){
   if(action === "?"){ enterTrue(); return; }
   const s=state.stats, r=state.route;
   if(action !== "D") state.dStreak=0; else state.dStreak++;
-  if(action === "A"){ s.population=cap(s.population+(r==="third"?30:r==="106"?20:10)); if(r==="1993")s.security=cap(s.security+10); }
-  if(action === "B" && s.maintenance !== Infinity) s.maintenance=cap(s.maintenance+(r==="third"?30:20));
-  if(action === "C"){ if(r==="106"){s.security=cap(s.security+10);s.autonomy=cap(s.autonomy+10);} else if(r==="third"){s.security=cap(s.security+15);s.autonomy=cap(s.autonomy+15);} else state.migration++; }
+  if(action === "A"){ s.population=cap(s.population+(r==="106"||r==="third"?20:10)); if(r==="1993")s.security=cap(s.security+10); }
+  if(action === "B" && s.maintenance !== Infinity) s.maintenance=cap(s.maintenance+20);
+  if(action === "C"){ if(r==="106"||r==="third"){s.security=cap(s.security+10);s.autonomy=cap(s.autonomy+10);} else state.migration++; }
   const decay = action === "D" ? 3 + (state.dStreak-1)*2 : 3;
   finiteEntries(s).forEach(([k,v])=>s[k]=cap(v-decay));
   let notes=[`${action}を選択。自然減少 ${decay}。`];
