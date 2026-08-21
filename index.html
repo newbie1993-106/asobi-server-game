@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#10182d" />
+  <title>遊び鯖運営ゲーム</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="game-shell">
+    <header class="topbar">
+      <p class="eyebrow">ASOBI SERVER MANAGEMENT SIMULATION</p>
+      <h1>遊び鯖運営ゲーム</h1>
+      <div class="day-line"><span id="route-badge">準備中</span><strong id="day-label">DAY 1</strong></div>
+    </header>
+
+    <section class="narrative" aria-live="polite"><p id="message">どの鯖の運営を引き受けますか？</p></section>
+
+    <section id="route-select" class="route-select" aria-label="ルート選択">
+      <button class="route-card blue" data-route="106"><span>🟦</span><b>106</b><small>人口は多い。保守は尽きない。</small></button>
+      <button class="route-card green" data-route="1993"><span>🟩</span><b>1993</b><small>治安は安定。自治は尽きない。</small></button>
+      <button class="route-card purple" data-route="third"><span>🟪</span><b>第三</b><small>すべてを自分たちで育てる。</small></button>
+    </section>
+
+    <section id="game-area" class="hidden">
+      <div id="status-grid" class="status-grid" aria-label="ステータス"></div>
+      <section id="objective" class="objective"></section>
+      <section id="alerts" class="alerts" aria-live="polite"></section>
+      <section id="choices" class="choices" aria-label="行動を選ぶ"></section>
+    </section>
+
+    <section id="ending" class="ending hidden" aria-live="assertive"></section>
+  </main>
+  <footer>1プレイ完結・セーブなし</footer>
+  <script src="game.js"></script>
+</body>
+</html>
+
