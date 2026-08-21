@@ -1,14 +1,14 @@
 "use strict";
 const $ = (s) => document.querySelector(s);
 const routeNames = { "106":"🟦 106", "1993":"🟩 1993", third:"🟪 第三", true:"🌟 TRUE ROUTE" };
-const labels = { population:"👥 人口", maintenance:"🛠 保守", security:"🛡 治安", autonomy:"🏛 自治" };
-const state = { route:null, day:1, stats:{}, dStreak:0, migration:0, survival:0, mystery:false, ended:false, trueStats:null };
+const labels = { population:"👥 人口", maintenance:"🛠 保守", security:"🛡 治安", autonomy:"🏛 自治", population106:"🟦 106・人口", maintenance106:"🟦 106・保守", security106:"🟦 106・治安", autonomy106:"🟦 106・自治", population1993:"🟩 1993・人口", maintenance1993:"🟩 1993・保守", security1993:"🟩 1993・治安", autonomy1993:"🟩 1993・自治" };
+const state = { route:null, day:1, stats:{}, dStreak:0, migration:0, survival:0, mystery:false, ended:false, trueStats:null, trueTarget:null };
 
 function cap(v){ return Math.max(0, Math.min(100, v)); }
 function finiteEntries(stats){ return Object.entries(stats).filter(([,v]) => v !== Infinity); }
 function setMessage(text){ $("#message").textContent = text; }
 function start(route){
-  state.route=route; state.day=1; state.dStreak=0; state.migration=0; state.survival=0; state.mystery=false; state.ended=false; state.trueStats=null;
+  state.route=route; state.day=1; state.dStreak=0; state.migration=0; state.survival=0; state.mystery=false; state.ended=false; state.trueStats=null; state.trueTarget=null;
   state.stats = route === "106" ? {population:80,maintenance:Infinity,security:50,autonomy:40} : route === "1993" ? {population:50,maintenance:40,security:80,autonomy:Infinity} : {population:40,maintenance:40,security:70,autonomy:60};
   $("#route-select").classList.add("hidden"); $("#game-area").classList.remove("hidden"); render();
   setMessage(`${routeNames[route]}の運営を引き受けた。毎日の選択が、鯖の未来を決める。`);
@@ -17,10 +17,10 @@ function objective(){
   if(state.route === "106") return "人口を守り続けよう。<br><b>目標：</b>DAY10以降、人口を一定以上で維持する。";
   if(state.route === "1993") return `受け入れ体制を整えよう。<br><b>目標：</b>DAY10以降に移行を進める。 ${state.day>=10?`（進行 ${state.migration}/5）`:""}`;
   if(state.route === "third") return "新しい鯖を育てよう。<br><b>目標：</b>4つの力を、すべて十分な水準まで高める。";
-  return "二つの鯖を、同時に維持する。<br><b>目標：</b>共存の道を探す。";
+  return state.trueTarget ? `${routeNames[state.trueTarget]}を運営中。<br><b>注意：</b>もう片方の鯖は、このターン操作できない。` : "二つの鯖を、同時に維持する。<br><b>目標：</b>まず、今ターン運営する鯖を選ぶ。";
 }
-function renderStats(stats, trueMode=false){
-  $("#status-grid").innerHTML = Object.entries(stats).map(([key,value]) => { const low=value !== Infinity && value<30; return `<article class="stat"><div class="stat-head"><span>${labels[key]}${trueMode?key.includes("106")?"":"":""}</span><b>${value===Infinity?"∞":value}</b></div><div class="meter ${low?"low":""}"><i style="width:${value===Infinity?100:value}%"></i></div></article>`; }).join("");
+function renderStats(stats){
+  $("#status-grid").innerHTML = Object.entries(stats).map(([key,value]) => { const low=value !== Infinity && value<30; return `<article class="stat"><div class="stat-head"><span>${labels[key]}</span><b>${value===Infinity?"∞":value}</b></div><div class="meter ${low?"low":""}"><i style="width:${value===Infinity?100:value}%"></i></div></article>`; }).join("");
 }
 function normalChoices(){
   const r=state.route, items = r === "106" ? [["A","企画を立てて参加者を呼ぶ","人口 +20"],["B","鯖の設備を点検する","保守 +20"],["C","ルール会議を開く","治安 +10 / 自治 +10"],["D","あえて手を出さず見守る","状況を見守る"]] : r === "1993" ? [["A","新規参加者を募集し、見回りを増やす","人口 +10 / 治安 +10"],["B","有志と鯖を整備する","保守 +20"],["C","106の人を迎える準備を進める",state.day>=10?`移行進行度 +1（${state.migration}/5）`:"DAY10以降に解放",state.day<10],["D","あえて手を出さず見守る","状況を見守る"]] : [["A","交流イベントを開いて仲間を集める","人口 +30"],["B","みんなで鯖を整備する","保守 +30"],["C","ルールと運営方針を話し合う","治安 +15 / 自治 +15"],["D","あえて手を出さず見守る","状況を見守る"]];
@@ -30,8 +30,9 @@ function normalChoices(){
 function render(){
   $("#route-badge").textContent=routeNames[state.route]; $("#day-label").textContent=state.route === "true" ? `TRUE DAY ${state.day}` : `DAY ${state.day}`;
   $("#objective").innerHTML=objective();
-  renderStats(state.route === "true" ? state.trueStats : state.stats, state.route === "true");
-  let alerts=[]; if(state.route !== "true") finiteEntries(state.stats).filter(([,v])=>v<30).forEach(([k])=>alerts.push(`${labels[k]}：${({population:"過疎化",maintenance:"管理不足",security:"治安悪化",autonomy:"運営不和"})[k]}が発生中`));
+  const displayedStats = state.route === "true" ? state.trueStats : state.stats;
+  renderStats(displayedStats);
+  let alerts=[]; finiteEntries(displayedStats).filter(([,v])=>v<30).forEach(([k])=>alerts.push(`${labels[k]}：${k.includes("population")?"過疎化":k.includes("maintenance")?"管理不足":k.includes("security")?"治安悪化":"運営不和"}が発生中`));
   $("#alerts").innerHTML=alerts.map(x=>`<p class="alert">⚠ ${x}</p>`).join("");
   const items = state.route === "true" ? trueChoices() : normalChoices();
   $("#choices").innerHTML=items.map(([key,name,detail,disabled,klass])=>`<button class="choice ${klass||""}" data-action="${key}" ${disabled?"disabled":""}><span class="key">${key}</span><span><b>${name}</b><small>${detail}</small></span></button>`).join("");
@@ -56,9 +57,28 @@ function applyNormal(action){
   state.day++; if(state.day===10){state.mystery=finiteEntries(s).every(([,v])=>v<=30);if(state.mystery)notes.push("……もしも、別の選択肢が存在したなら。 ");}
   setMessage(notes.join(" ")); render();
 }
-function enterTrue(){ state.route="true";state.day=1;state.dStreak=0;state.trueStats={"population106":80,"population1993":50}; labels.population106="👥 106 人口"; labels.population1993="👥 1993 人口";setMessage("二つの鯖を共存させる道を選んだ。だが、人口は足りない。 ");render(); }
-function trueChoices(){return [["A","106に残ってほしいと呼びかける","106人口 +2（通常の1/10）"],["B","1993の受け入れを手伝う","1993人口 +1（通常の1/10）"],["D","二つの鯖をただ見守る","両方を見守る"]];}
-function applyTrue(action){ const s=state.trueStats;if(action==="A")s.population106=cap(s.population106+2);if(action==="B")s.population1993=cap(s.population1993+1);s.population106=cap(s.population106-6);s.population1993=cap(s.population1993-6);if(s.population106>=100&&s.population1993>=100){end(false,"⚠ SYSTEM ERROR\n\nこのルートはクリアを想定されていません。間違いなく不具合ですので、ぬーんに連絡してください。");return;}if(gameOver(s)){end(false,trueOverText());return;}state.day++;setMessage("二つの鯖から、同時に人が離れていく。 ");render(); }
+function enterTrue(){ state.route="true";state.day=1;state.dStreak=0;state.trueTarget=null;state.trueStats={population106:80,maintenance106:Infinity,security106:50,autonomy106:40,population1993:50,maintenance1993:40,security1993:80,autonomy1993:Infinity};setMessage("二つの鯖を共存させる道を選んだ。どちらを運営する？");render(); }
+function trueChoices(){
+  if(!state.trueTarget) return [["106","106を運営する","106の人口・保守・治安・自治に手を入れる"],["1993","1993を運営する","1993の人口・保守・治安・自治に手を入れる"]];
+  const target=state.trueTarget, is106=target==="106";
+  return [["A","交流企画で人を呼び戻す",`人口 +${is106?2:1}（通常の1/10）`],["B","鯖の設備を整備する","保守 +20"],["C","ルール会議を開く","治安 +10 / 自治 +10"],["D","あえて手を出さず見守る","状況を見守る"],["change","運営する鯖を選び直す","このターンはまだ進まない"]];
+}
+function applyTrue(action){
+  if(action==="106"||action==="1993"){state.trueTarget=action;setMessage(`${routeNames[action]}を運営する。行動を選んでください。`);render();return;}
+  if(action==="change"){state.trueTarget=null;setMessage("今ターン運営する鯖を選び直す。");render();return;}
+  const s=state.trueStats, suffix=state.trueTarget, key=(name)=>`${name}${suffix}`;
+  if(action!=="D")state.dStreak=0;else state.dStreak++;
+  if(action==="A")s[key("population")]=cap(s[key("population")]+(suffix==="106"?2:1));
+  if(action==="B"&&s[key("maintenance")]!==Infinity)s[key("maintenance")]=cap(s[key("maintenance")]+20);
+  if(action==="C"){s[key("security")]=cap(s[key("security")]+10);if(s[key("autonomy")]!==Infinity)s[key("autonomy")]=cap(s[key("autonomy")]+10);}
+  const decay=action==="D"?3+(state.dStreak-1)*2:3;
+  finiteEntries(s).forEach(([k,v])=>s[k]=cap(v-decay));
+  s.population106=cap(s.population106-6);s.population1993=cap(s.population1993-6);
+  const trouble=finiteEntries(s).filter(([,v])=>v<30);trouble.forEach(([k,v])=>s[k]=cap(v-3));
+  if(finiteEntries(s).every(([,v])=>v>=100)){end(false,"⚠ SYSTEM ERROR\n\nこのルートはクリアを想定されていません。間違いなく不具合ですので、ぬーんに連絡してください。");return;}
+  if(gameOver(s)){end(false,trueOverText());return;}
+  state.day++;state.trueTarget=null;setMessage(`両方の鯖から人が離れていく。自然減少 ${decay}、さらに両鯖の人口 -6。`);render();
+}
 function gameOver(stats){return Object.values(stats).some(v=>v !== Infinity && v<=0);}
 function trueOverText(){return "共存ルートは攻略不可能な難易度だっただろう。攻略不可能なのは、2つの鯖を維持するだけの人口が遊び鯖コミュニティになかったからだ。もしも遊び鯖の人口が多かったなら、共存ルートは攻略不能ルートではなく、真の正解のルートとして君臨していたでしょう。";}
 function end(clear,text){state.ended=true;$("#game-area").classList.add("hidden");const el=$("#ending");el.className=`ending ${clear?"clear":"over"}`;el.innerHTML=`<h2>${clear?"🏆 CLEAR":"💀 GAME OVER"}</h2><p>${text}</p><button class="restart">最初から遊ぶ</button>`;el.classList.remove("hidden");}
